@@ -1,0 +1,49 @@
+#关闭二次确认
+#confirm_os_window_close 0
+
+
+#透明度
+background_opacity 0.97
+
+# 前景色稍微加点亮度补偿，防止模糊背景让文字发虚
+#foreground #e0e0e0
+
+
+
+font_family JetBrainsMono Nerd Font
+font_size 13
+
+# 减少输入延迟
+input_delay 0
+repaint_delay 2
+sync_to_monitor no
+wayland_enable_ime no
+
+
+# 锁定刷新率
+#sync_to_monitor no
+
+# BEGIN_KITTY_THEME
+# Catppuccin-Mocha
+include current-theme.conf
+# END_KITTY_THEME
+
+initial_window_width 1000
+initial_window_height 700
+remember_window_size no
+
+
+# 启用 splits 布局（必须有这行）
+enabled_layouts splits
+
+# 分屏
+map ctrl+shift+i launch --location=vsplit
+map ctrl+shift+o launch --location=hsplit
+
+# 切换焦点（官方推荐写法）
+map ctrl+shift+h neighboring_window left
+map ctrl+shift+l neighboring_window right
+map ctrl+shift+k neighboring_window up
+map ctrl+shift+j neighboring_window down
+
+#hide_window_decorations yes
