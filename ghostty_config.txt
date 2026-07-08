@@ -1,0 +1,36 @@
+theme = Catppuccin Mocha
+
+font-size = 11
+
+#window
+window-save-state = never
+window-width = 120
+window-height = 35
+# 窗口内边距美化（可选）
+window-padding-x = 6
+window-padding-y = 6
+window-padding-color = extend
+
+
+# 垂直/水平分屏
+keybind = ctrl+i=new_split:right
+keybind = ctrl+o=new_split:down
+
+# 切换分屏焦点（Vim风格 alt hjkl）
+keybind = alt+h=goto_split:left
+keybind = alt+j=goto_split:bottom
+keybind = alt+k=goto_split:top
+keybind = alt+l=goto_split:right
+
+# 分屏最大化/均分
+keybind = ctrl+shift+i=toggle_split_zoom
+keybind = ctrl+shift+o=equalize_splits
+
+background-opacity = 0.97
+
+#光标模式
+cursor-style = block
+#光标闪烁
+#cursor-style-blink = false
+#防光标被覆盖
+shell-integration-features = no-cursor
