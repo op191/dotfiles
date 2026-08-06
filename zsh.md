@@ -52,4 +52,7 @@ alias ls="ls --color=auto"
 #ZSH_HIGHLIGHT_MAXLENGTH=80
 source /usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
 
+
+#ctrl+左右方向单词移动
+
 ```
