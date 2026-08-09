@@ -54,5 +54,4 @@ source /usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.
 
 
 #ctrl+左右方向单词移动
-
 ```
