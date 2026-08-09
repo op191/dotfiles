@@ -1,0 +1,27 @@
+[font]
+size = 12.0
+
+normal = { family = "FiraCode Nerd Font", style = "Regular" }
+bold = { style = "Bold" }
+italic = { style = "Italic" }
+bold_italic = { style = "Bold Italic" }
+
+[general]
+import = [
+    "/usr/share/alacritty/themes/catppuccin_mocha.toml"
+]
+
+[window]
+dimensions.columns = 105
+dimensions.lines = 35
+padding.x = 5          # 左右各留多少像素
+padding.y = 5          # 上下各留多少像素
+dynamic_padding = true  # 窗口大小改变时,多余空间平均分配到四周,而不是全堆在右/下边
+opacity = 0.97
+blur = true
+
+[[keyboard.bindings]]
+key = "Return"
+mods = "Control"
+action = "ToggleFullscreen"
+
