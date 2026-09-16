@@ -49,10 +49,21 @@ zstyle ':vcs_info:git:*' unstagedstr '%F{red}✗%f'
 zstyle ':vcs_info:git:*' formats ' (%b%c%u)'
 zstyle ':vcs_info:*' enable git
 
-# ===== 提示符样式 =====
+# ===== 提示符 =====
+# ===== 根据"这个 shell 是不是被 SSH 进来的"变色 =====
 setopt PROMPT_SUBST
-PROMPT='[%F{green}%n@%m%f %F{cyan}%~%f%F{yellow}${vcs_info_msg_0_}%f]%(!.#.$) '
+#ssh提示符颜色和本地提示符颜色
+PROMPT='%B%F{${${SSH_CONNECTION:+cyan}:-green}}%n@%m%f%b:%B%F{blue}%~%f%b%F{yellow}${vcs_info_msg_0_}%f%(!.#.$) '
 
+# ===== ssh 命令包装：本机主动连出去时，终端整体变色 =====
+ssh() {
+    {
+        echo -ne '\e[1;36m'   # 连接前，终端切成加粗青色
+        command ssh "$@"      # command 避免递归调用自己
+    } always {
+        echo -ne '\e[0m'      # 正常退出/断线/Ctrl+C 都强制重置回默认色
+    }
+}
 # ===== 其他 shell 行为 =====
 setopt interactive_comments  # 交互模式下 # 后面的内容不执行，方便临时注释命令
 setopt EXTENDED_GLOB         # 支持更强的通配符匹配(比如 ^、~ 排除模式)
@@ -72,5 +83,9 @@ bindkey '^[[1;5D' backward-word    # Ctrl+左，按单词跳转
 
 # ===== 历史搜索/粘贴时取消背景高亮 =====
 zle_highlight=('isearch:fg=none,bg=none' 'suffix:fg=none,bg=none' 'paste:fg=none,bg=none')
+
+# Created by `pipx` on 2026-09-01 10:55:25
+export PATH="$PATH:/home/neon/.local/bin"
+bindkey '^U' backward-kill-line
 
 ```
