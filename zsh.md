@@ -7,7 +7,6 @@ sudo pacman -S zsh-syntax-highlighting zsh-autosuggestions
 zsh配置代码
 
 ```bash
-# ~/.zshrc — Arch Linux 版，基于 Kali 默认配置修改
 # 使用方法：将此文件内容覆盖到 ~/.zshrc，然后执行 `source ~/.zshrc` 或重开终端
 
 # ===== 基础 shell 选项 =====
