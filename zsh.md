@@ -69,7 +69,6 @@ alias history="history 0"     # 显示完整历史（不截断编号）
 TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'  # time 命令输出格式
 
 # ===== 提示符（prompt）=====
-# ===== 提示符（prompt）=====
 if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
     color_prompt=yes
 else
@@ -83,23 +82,34 @@ precmd_functions+=(vcs_info)               # 每次显示提示符前刷新一�
 
 #NEWLINE_BEFORE_PROMPT=yes    # 每次输出后空一行再显示新提示符
 
+# ===== Python 虚拟环境信息（供下面 PROMPT 里的 venv_info 使用）=====
+venv_info() {
+    [ -n "$VIRTUAL_ENV" ] && echo "%F{magenta}($(basename $VIRTUAL_ENV))%f "
+}
+
 if [ "$color_prompt" = yes ]; then
+    # 关闭 activate 脚本自带的 PS1 修改，改为下面手动接管，风格与整体配色统一
     VIRTUAL_ENV_DISABLE_PROMPT=1
 
-    # ===== 自定义单行提示符：SSH 连接时用户名@主机名变青色，本地是绿色 =====
-    PROMPT='%B%F{${${SSH_CONNECTION:+cyan}:-green}}%n@%m%f%b:%B%F{blue}%~%f%b%F{yellow}${vcs_info_msg_0_}%f%(!.#.$) '
+    # ===== 自定义单行提示符：venv 名（品红）+ 用户名@主机名（SSH 时青色/本地绿色）=====
+    PROMPT='$(venv_info)%B%F{${${SSH_CONNECTION:+cyan}:-green}}%n@%m%f%b:%B%F{blue}%~%f%b%F{yellow}${vcs_info_msg_0_}%f%(!.#.$) '
 
-    # ===== ssh 命令包装：主动连出去时整个终端变色，提醒自己身处远程会话 =====
-    ssh() {
-        {
-            echo -ne '\e[1;36m'   # 连接前，终端切成加粗青色
-            command ssh "$@"      # command 避免递归调用自己
-        } always {
-            echo -ne '\e[0m'      # 正常退出/断线/Ctrl+C 都强制重置回默认色
-        }
-    }
+    # ===== ssh 命令包装：主动连出去时，把远程 shell 的提示符也设为青色 =====
+# 自动判断远程默认 shell 是 bash 还是 zsh，分别用对应语法设置提示符，
+# 不强行切换远程用户的默认 shell。
+ssh() {
+    command ssh -t "$@" '
+        if [ -n "$ZSH_VERSION" ]; then
+            export PROMPT="%B%F{cyan}%n@%m%f%b:%B%F{blue}%~%f%b%(!.#.$) "
+            exec zsh --login
+        else
+            export PS1="\[\e[1;36m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\]\$ "
+            exec bash --login
+        fi
+    '
+}
 
-    # ===== 语法高亮插件 =====
+    # ===== 语法高亮插件（Arch 路径，已修正） =====
     if [ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
         . /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
         ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
@@ -146,7 +156,7 @@ if [ "$color_prompt" = yes ]; then
         ZSH_HIGHLIGHT_STYLES[cursor-matchingbracket]=standout
     fi
 else
-    PROMPT='%n@%m:%~%(#.#.$) '
+    PROMPT='$(venv_info)%n@%m:%~%(#.#.$) '
 fi
 unset color_prompt force_color_prompt
 
@@ -201,8 +211,8 @@ alias ll='ls -l'
 alias la='ls -A'
 alias l='ls -CF'
 
-# ===== 自动建议插件 =====
-
+# ===== 自动建议插件（Arch 路径，已修正）=====
+# Arch 上这个目录里有两个文件：xxx.zsh 和 xxx.plugin.zsh，功能等价，任选一个 source 即可
 if [ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
     . /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
     ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=244'   # 建议文字的颜色（灰色）
