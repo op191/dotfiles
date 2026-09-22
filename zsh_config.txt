@@ -1,45 +1,36 @@
-cat .zshrc
-# ~/.zshrc file for zsh interactive shells.
-# see /usr/share/doc/zsh/examples/zshrc for examples
+# ~/.zshrc — Arch Linux 版，基于 Kali 默认配置修改
+# 使用方法：将此文件内容覆盖到 ~/.zshrc，然后执行 `source ~/.zshrc` 或重开终端
 
-fastfetch
+# ===== 基础 shell 选项 =====
+setopt autocd              # 直接输入目录名即可 cd 进去
+setopt interactivecomments # 交互模式下允许写 # 注释
+setopt magicequalsubst     # 对 foo=bar 形式的参数也做文件名展开
+setopt nonomatch           # 通配符匹配不到时不报错
+setopt notify              # 后台任务状态变化立即通知
+setopt numericglobsort     # 文件名里的数字按数值大小排序，而非字符串排序
+setopt promptsubst         # 允许在 PROMPT 里做命令替换
 
-TTY1=$(tty)
-if [ -z "$DISPLAY" ] && [ "$TTY1" = "/dev/tty1" ]; then
-    exec /usr/lib/plasma-dbus-run-session-if-needed /usr/bin/startplasma-wayland
-fi
+WORDCHARS='_-' # 编辑命令行时，_ 和 - 不算作单词分隔符（ctrl+方向键跳词用）
 
-setopt autocd              # change directory just by typing its name
-#setopt correct            # auto correct mistakes
-setopt interactivecomments # allow comments in interactive mode
-setopt magicequalsubst     # enable filename expansion for arguments of the form ‘anything=expression’
-setopt nonomatch           # hide error message if there is no match for the pattern
-setopt notify              # report the status of background jobs immediately
-setopt numericglobsort     # sort filenames numerically when it makes sense
-setopt promptsubst         # enable command substitution in prompt
+PROMPT_EOL_MARK="" # 隐藏输出末尾没有换行符时显示的 % 符号
 
-WORDCHARS='_-' # Don't consider certain characters part of the word
+# ===== 按键绑定 =====
+bindkey -e                                        # emacs 风格快捷键（ctrl+a/e/w 等）
+bindkey ' ' magic-space                           # 空格键触发历史展开（如 !!<space>）
+bindkey '^U' backward-kill-line                   # ctrl+U 删除光标前整行
+bindkey '^[[3;5~' kill-word                       # ctrl+Delete
+bindkey '^[[3~' delete-char                       # Delete 键
+bindkey '^[[1;5C' forward-word                    # ctrl+右方向键 跳词
+bindkey '^[[1;5D' backward-word                   # ctrl+左方向键 跳词
+bindkey '^[[5~' beginning-of-buffer-or-history    # Page Up
+bindkey '^[[6~' end-of-buffer-or-history          # Page Down
+bindkey '^[[H' beginning-of-line                  # Home
+bindkey '^[[F' end-of-line                        # End
+bindkey '^[[Z' undo                               # shift+Tab 撤销上一步操作
 
-# hide EOL sign ('%')
-PROMPT_EOL_MARK=""
-
-# configure key keybindings
-bindkey -e                                        # emacs key bindings
-bindkey ' ' magic-space                           # do history expansion on space
-bindkey '^U' backward-kill-line                   # ctrl + U
-bindkey '^[[3;5~' kill-word                       # ctrl + Supr
-bindkey '^[[3~' delete-char                       # delete
-bindkey '^[[1;5C' forward-word                    # ctrl + ->
-bindkey '^[[1;5D' backward-word                   # ctrl + <-
-bindkey '^[[5~' beginning-of-buffer-or-history    # page up
-bindkey '^[[6~' end-of-buffer-or-history          # page down
-bindkey '^[[H' beginning-of-line                  # home
-bindkey '^[[F' end-of-line                        # end
-bindkey '^[[Z' undo                               # shift + tab undo last action
-
-# enable completion features
+# ===== 补全系统 =====
 autoload -Uz compinit
-compinit -d ~/.cache/zcompdump
+compinit -d ~/.cache/zcompdump   # 缓存补全数据库，避免每次启动重新扫描
 zstyle ':completion:*:*:*:*:*' menu select
 zstyle ':completion:*' auto-description 'specify: %d'
 zstyle ':completion:*' completer _expand _complete
@@ -47,105 +38,71 @@ zstyle ':completion:*' format 'Completing %d'
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*' list-colors ''
 zstyle ':completion:*' list-prompt %SAt %p: Hit TAB for more, or the character to insert%s
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'  # 补全时大小写不敏感
 zstyle ':completion:*' rehash true
 zstyle ':completion:*' select-prompt %SScrolling active: current selection at %p%s
 zstyle ':completion:*' use-compctl false
 zstyle ':completion:*' verbose true
-zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'  # kill 命令补全时显示进程列表
 
-# History configurations
+# ===== 历史记录 =====
 HISTFILE=~/.zsh_history
 HISTSIZE=1000
 SAVEHIST=2000
-setopt hist_expire_dups_first # delete duplicates first when HISTFILE size exceeds HISTSIZE
-setopt hist_ignore_dups       # ignore duplicated commands history list
-setopt hist_ignore_space      # ignore commands that start with space
-setopt hist_verify            # show command with history expansion to user before running it
-#setopt share_history         # share command history data
+setopt hist_expire_dups_first # 历史记录超限时优先删除重复命令
+setopt hist_ignore_dups       # 连续重复的命令不重复记录
+setopt hist_ignore_space      # 以空格开头的命令不记录（临时敏感命令可用这招）
+setopt hist_verify            # 历史展开（如 !123）先显示命令，回车确认后再执行
+#setopt share_history         # 多终端间实时共享历史，默认关闭
 
-# force zsh to show the complete history
-alias history="history 0"
+alias history="history 0"     # 显示完整历史（不截断编号）
 
-# configure `time` format
-TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
+TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'  # time 命令输出格式
 
-# make less more friendly for non-text input files, see lesspipe(1)
-#[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
-
-# set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
+# ===== 提示符（prompt）=====
+if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+    color_prompt=yes
+else
+    color_prompt=
 fi
 
-# set a fancy prompt (non-color, unless we know we "want" color)
-case "$TERM" in
-    xterm-color|*-256color) color_prompt=yes;;
-esac
-
-# uncomment for a colored prompt, if the terminal has the capability; turned
-# off by default to not distract the user: the focus in a terminal window
-# should be on the output of commands, not on the prompt
-force_color_prompt=yes
-
-if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-        # We have color support; assume it's compliant with Ecma-48
-        # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-        # a case would tend to support setf rather than setaf.)
-        color_prompt=yes
-    else
-        color_prompt=
-    fi
-fi
-
-#git branch
+# ===== git 分支信息（供下面 PROMPT 里的 vcs_info_msg_0_ 使用）=====
 autoload -Uz vcs_info
-precmd_functions+=(vcs_info)
-zstyle ':vcs_info:git:*' formats ' (%b)'
-zstyle ':vcs_info:*' enable git
+zstyle ':vcs_info:git:*' formats ' (%b)'   # 显示格式：空格 + 括号包裹的分支名
+precmd_functions+=(vcs_info)               # 每次显示提示符前刷新一次 git 状态
 
-configure_prompt() {
-    prompt_symbol=㉿
-    # Skull emoji for root terminal
-    #[ "$EUID" -eq 0 ] && prompt_symbol=💀
-    case "$PROMPT_ALTERNATIVE" in
-        twoline)
-            PROMPT=$'%F{%(#.#ff5555.#bd93f9)}┌──${debian_chroot:+($debian_chroot)─}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))─}(%B%F{%(#.#ff5555.#bd93f9)}%n'$prompt_symbol$'%m%b%F{%(#.#ff5555.#bd93f9)})-[%B%F{#8be9fd}%(6~.%-1~/…/%4~.%5~)%b%F{yellow}${vcs_info_msg_0_}%F{%(#.#ff5555.#bd93f9)}]\n└─%B%(#.%F{#ff5555}#.%F{#50fa7b}$)%b%F{reset} '
-            ;;
-	   #twoline)
-         #   PROMPT=$'%F{%(#.blue.green)}┌──${debian_chroot:+($debian_chroot)─}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))─}(%B%F{%(#.red.blue)}%n'$prompt_symbol$'%m%b%F{%(#.blue.green)})-[%B%F{reset}%(6~.%-1~/…/%4~.%5~)%b%F{%(#.blue.green)}]\n└─%B%(#.%F{red}#.%F{blue}$)%b%F{reset} '
-            # Right-side prompt with exit codes and background processes
-            #RPROMPT=$'%(?.. %? %F{red}%B⨯%b%F{reset})%(1j. %j %F{yellow}%B⚙%b%F{reset}.)'
-            #;;
-        oneline)
-            PROMPT=$'${debian_chroot:+($debian_chroot)}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%B%F{%(#.red.blue)}%n@%m%b%F{reset}:%B%F{%(#.blue.green)}%~%b%F{reset}%(#.#.$) '
-            RPROMPT=
-            ;;
-        backtrack)
-            PROMPT=$'${debian_chroot:+($debian_chroot)}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%B%F{red}%n@%m%b%F{reset}:%B%F{blue}%~%b%F{reset}%(#.#.$) '
-            RPROMPT=
-            ;;
-    esac
-    unset prompt_symbol
+#NEWLINE_BEFORE_PROMPT=yes    # 每次输出后空一行再显示新提示符
+
+# ===== Python 虚拟环境信息（供下面 PROMPT 里的 venv_info 使用）=====
+venv_info() {
+    [ -n "$VIRTUAL_ENV" ] && echo "%F{magenta}($(basename $VIRTUAL_ENV))%f "
 }
 
-# The following block is surrounded by two delimiters.
-# These delimiters must not be modified. Thanks.
-# START KALI CONFIG VARIABLES
-PROMPT_ALTERNATIVE=twoline
-NEWLINE_BEFORE_PROMPT=yes
-# STOP KALI CONFIG VARIABLES
-
 if [ "$color_prompt" = yes ]; then
-    # override default virtualenv indicator in prompt
+    # 关闭 activate 脚本自带的 PS1 修改，改为下面手动接管，风格与整体配色统一
     VIRTUAL_ENV_DISABLE_PROMPT=1
 
-    configure_prompt
+    # ===== 自定义单行提示符：venv 名（品红）+ 用户名@主机名（SSH 时青色/本地绿色）=====
+    PROMPT='$(venv_info)%B%F{${${SSH_CONNECTION:+cyan}:-green}}%n@%m%f%b:%B%F{blue}%~%f%b%F{yellow}${vcs_info_msg_0_}%f%(!.#.$) '
 
-    # enable syntax-highlighting
+    # ===== ssh 命令包装：主动连出去时，把远程 shell 的提示符也设为青色 =====
+# 自动判断远程默认 shell 是 bash 还是 zsh，分别用对应语法设置提示符，
+# 不强行切换远程用户的默认 shell。
+ssh() {
+    command ssh -t "$@" '
+        if [ -n "$ZSH_VERSION" ]; then
+            export PROMPT="%B%F{cyan}%n@%m%f%b:%B%F{blue}%~%f%b%(!.#.$) "
+            exec zsh --login
+        else
+            export PS1="\[\e[1;36m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\]\$ "
+            exec bash --login
+        fi
+    '
+}
+
+    # ===== 语法高亮插件（Arch 路径，已修正） =====
     if [ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
-    . /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+        . /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
         ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
         ZSH_HIGHLIGHT_STYLES[default]=none
         ZSH_HIGHLIGHT_STYLES[unknown-token]=underline
@@ -190,36 +147,22 @@ if [ "$color_prompt" = yes ]; then
         ZSH_HIGHLIGHT_STYLES[cursor-matchingbracket]=standout
     fi
 else
-    PROMPT='${debian_chroot:+($debian_chroot)}%n@%m:%~%(#.#.$) '
+    PROMPT='$(venv_info)%n@%m:%~%(#.#.$) '
 fi
 unset color_prompt force_color_prompt
 
-toggle_oneline_prompt(){
-    if [ "$PROMPT_ALTERNATIVE" = oneline ]; then
-        PROMPT_ALTERNATIVE=twoline
-    else
-        PROMPT_ALTERNATIVE=oneline
-    fi
-    configure_prompt
-    zle reset-prompt
-}
-zle -N toggle_oneline_prompt
-bindkey ^P toggle_oneline_prompt
-
-# If this is an xterm set the title to user@host:dir
+# xterm 系终端下，把窗口标题设成 用户@主机:路径
 case "$TERM" in
 xterm*|rxvt*|Eterm|aterm|kterm|gnome*|alacritty)
-    TERM_TITLE=$'\e]0;${debian_chroot:+($debian_chroot)}${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%n@%m: %~\a'
+    TERM_TITLE=$'\e]0;%n@%m: %~\a'
     ;;
 *)
     ;;
 esac
 
 precmd() {
-    # Print the previously configured title
     print -Pnr -- "$TERM_TITLE"
-
-    # Print a new line before the prompt, but only if it is not the first line
+    # 每次显示新提示符前空一行（第一次不空，避免开屏就有空行）
     if [ "$NEWLINE_BEFORE_PROMPT" = yes ]; then
         if [ -z "$_NEW_LINE_BEFORE_PROMPT" ]; then
             _NEW_LINE_BEFORE_PROMPT=1
@@ -229,47 +172,42 @@ precmd() {
     fi
 }
 
-# enable color support of ls, less and man, and also add handy aliases
+# ===== ls/grep 等命令上色 + 常用别名 =====
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-    export LS_COLORS="$LS_COLORS:ow=30;44:" # fix ls color for folders with 777 permissions
+    export LS_COLORS="$LS_COLORS:ow=30;44:" # 修正 777 权限目录的显示颜色
 
     alias ls='ls --color=auto'
-    #alias dir='dir --color=auto'
-    #alias vdir='vdir --color=auto'
-
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
     alias egrep='egrep --color=auto'
     alias diff='diff --color=auto'
     alias ip='ip --color=auto'
 
-    export LESS_TERMCAP_mb=$'\E[1;31m'     # begin blink
-    export LESS_TERMCAP_md=$'\E[1;36m'     # begin bold
-    export LESS_TERMCAP_me=$'\E[0m'        # reset bold/blink
-    export LESS_TERMCAP_so=$'\E[01;33m'    # begin reverse video
-    export LESS_TERMCAP_se=$'\E[0m'        # reset reverse video
-    export LESS_TERMCAP_us=$'\E[1;32m'     # begin underline
-    export LESS_TERMCAP_ue=$'\E[0m'        # reset underline
+    # less/man 里的高亮颜色（终端控制码）
+    export LESS_TERMCAP_mb=$'\E[1;31m'
+    export LESS_TERMCAP_md=$'\E[1;36m'
+    export LESS_TERMCAP_me=$'\E[0m'
+    export LESS_TERMCAP_so=$'\E[01;33m'
+    export LESS_TERMCAP_se=$'\E[0m'
+    export LESS_TERMCAP_us=$'\E[1;32m'
+    export LESS_TERMCAP_ue=$'\E[0m'
     export MANROFFOPT="-c"
 
-    # Take advantage of $LS_COLORS for completion as well
     zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
     zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
 fi
 
-# some more ls aliases
 alias ll='ls -l'
 alias la='ls -A'
 alias l='ls -CF'
 
-# enable auto-suggestions based on the history
+# ===== 自动建议插件（Arch 路径，已修正）=====
+# Arch 上这个目录里有两个文件：xxx.zsh 和 xxx.plugin.zsh，功能等价，任选一个 source 即可
 if [ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
     . /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=244'
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=244'   # 建议文字的颜色（灰色）
 fi
 
-# enable command-not-found if installed
-if [ -f /etc/zsh_command_not_found ]; then
-    . /etc/zsh_command_not_found
-fi
+# 注：Kali 原版这里还有 command-not-found 钩子（/etc/zsh_command_not_found）
+# 这是 Debian 系特有机制，Arch 没有对应文件，故整段删除，不留无效判断
