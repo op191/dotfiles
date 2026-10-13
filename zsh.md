@@ -220,5 +220,4 @@ fi
 
 # 注：Kali 原版这里还有 command-not-found 钩子（/etc/zsh_command_not_found）
 # 这是 Debian 系特有机制，Arch 没有对应文件，故整段删除，不留无效判断
-
 ```
